@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Awesome Experiences – By Teacher Lizbeth</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
+
+  :root {
+    --sky1: #87CEEB;
+    --sky2: #c9e8f7;
+    --ground: #6dbf5e;
+    --ground-dark: #4a9a3c;
+    --cloud: #ffffffcc;
+    --box-right: #FFD700;
+    --box-wrong: #ff6b6b;
+    --box-default: #fff9e6;
+    --text-dark: #1a1a2e;
+    --gold: #FFD700;
+    --silver: #C0C0C0;
+    --bronze: #CD7F32;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--sky1);
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    transition: opacity 0.4s;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; }
+
+  /* START SCREEN */
+  #startScreen {
+    background: linear-gradient(160deg, #1a1a6e 0%, #16213e 60%, #0f3460 100%);
+    color: white;
+  }
+  #startScreen h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.6rem, 5vw, 3rem);
+    text-align: center;
+    color: #FFD700;
+    text-shadow: 0 3px 10px rgba(255,215,0,0.5);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  #startScreen .subtitle {
+    font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+    color: #aad4ff;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .start-emoji { font-size: clamp(4rem, 15vw, 7rem); margin-bottom: 10px; animation: bounce 1s infinite alternate; }
+  @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-18px); } }
+
+  .name-input-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; width: 90%; max-width: 340px; }
+  .name-input-wrap label { font-size: 1rem; color: #aad4ff; }
+  .name-input-wrap input {
+    width: 100%; padding: 12px 16px; border-radius: 30px; border: 2px solid #FFD700;
+    font-family: 'Nunito', sans-serif; font-size: 1.1rem; text-align: center;
+    background: rgba(255,255,255,0.1); color: white; outline: none;
+  }
+  .name-input-wrap input::placeholder { color: rgba(255,255,255,0.4); }
+
+  .btn {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 3vw, 1.4rem);
+    padding: 14px 40px; border: none; border-radius: 50px; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(0,0,0,0.25); }
+  .btn-gold { background: linear-gradient(135deg,#FFD700,#ff9900); color: #1a1a2e; }
+  .btn-blue { background: linear-gradient(135deg,#4fc3f7,#1565c0); color: white; }
+  .btn-green { background: linear-gradient(135deg,#66bb6a,#2e7d32); color: white; }
+  .btn-red { background: linear-gradient(135deg,#ef5350,#b71c1c); color: white; }
+
+  /* RULES */
+  .rules-box {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 16px; padding: 14px 20px; width: 90%; max-width: 380px;
+    margin-bottom: 20px; font-size: clamp(0.78rem, 2.2vw, 0.95rem); line-height: 1.7;
+    color: #dce8ff;
+  }
+  .rules-box strong { color: #FFD700; }
+
+  /* ===== GAME CANVAS AREA ===== */
+  #gameArea {
+    position: fixed; inset: 0;
+    overflow: hidden;
+    background: linear-gradient(180deg, #87CEEB 0%, #c9e8f7 55%, #6dbf5e 55%, #4a9a3c 100%);
+  }
+  #gameArea.hidden { display: none; }
+
+  /* Clouds */
+  .cloud {
+    position: absolute;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.88;
+    box-shadow: 0 4px 15px rgba(255,255,255,0.5);
+  }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+
+  /* Answer boxes */
+  .ans-box {
+    position: absolute;
+    min-width: 140px;
+    padding: 14px 22px;
+    border-radius: 18px;
+    background: var(--box-default);
+    border: 4px solid #FFD700;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    text-align: center;
+    color: var(--text-dark);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 -4px 0 rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    white-space: nowrap;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .ans-box .emoji-hint { font-size: 1.8em; }
+  .ans-box.correct { background: #a8f0a8; border-color: #2e7d32; animation: popBox 0.4s; }
+  .ans-box.wrong   { background: #ffa8a8; border-color: #b71c1c; animation: shakeBox 0.4s; }
+  @keyframes popBox { 0%{transform:scale(1)} 50%{transform:scale(1.25)} 100%{transform:scale(1)} }
+  @keyframes shakeBox { 0%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} 100%{transform:translateX(0)} }
+
+  /* Ground / Prompt bar */
+  #groundBar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 14%;
+    background: linear-gradient(180deg, #6dbf5e, #4a9a3c);
+    border-top: 4px solid #3a8a2c;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 5;
+  }
+  #promptLabel {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(0.7rem, 2vw, 0.9rem);
+    color: rgba(255,255,255,0.7);
+  }
+  #promptWord {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.1rem, 4vw, 1.8rem);
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    text-align: center;
+    padding: 0 10px;
+  }
+
+  /* Sky word — big faded word floating in background */
+  #skyWord {
+    position: absolute;
+    left: 50%; top: 18%;
+    transform: translateX(-50%);
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.8rem, 10vw, 6rem);
+    color: rgba(255,255,255,0.22);
+    text-shadow: 0 4px 24px rgba(100,180,255,0.25);
+    pointer-events: none;
+    z-index: 2;
+    text-align: center;
+    white-space: nowrap;
+    transition: opacity 0.5s;
+    letter-spacing: 2px;
+  }
+
+  /* Birds */
+  .bird {
+    position: absolute;
+    font-size: clamp(1.2rem, 3.5vw, 2rem);
+    pointer-events: none;
+    z-index: 3;
+    animation: birdFlap 0.45s steps(2) infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+  @keyframes birdFlap {
+    0%   { transform: scaleY(1);  }
+    50%  { transform: scaleY(0.6); }
+    100% { transform: scaleY(1);  }
+  }
+
+  /* Player emoji */
+  #player {
+    position: absolute;
+    font-size: clamp(5rem, 16vw, 8rem);
+    z-index: 10;
+    transition: transform 0.05s;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    line-height: 1;
+  }
+
+  /* HUD */
+  #hud {
+    position: absolute;
+    top: 8px; left: 8px; right: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .hud-chip {
+    background: rgba(0,0,0,0.45);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(0.75rem, 2.3vw, 1rem);
+    padding: 5px 12px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #timerDisplay { color: #FFD700; }
+
+  /* Touch controls */
+  #touchControls {
+    position: absolute;
+    bottom: 15%; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 12px;
+    z-index: 15;
+    pointer-events: none;
+  }
+  .touch-btn {
+    pointer-events: all;
+    width: clamp(56px, 16vw, 76px);
+    height: clamp(56px, 16vw, 76px);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    border: 3px solid rgba(255,255,255,0.5);
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px);
+    active-state: scale(0.9);
+    transition: transform 0.1s;
+  }
+  .touch-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.45); }
+  #jumpBtn {
+    position: absolute;
+    bottom: 15%;
+    right: 50%;
+    transform: translateX(50%);
+    width: clamp(60px,18vw,80px);
+    height: clamp(60px,18vw,80px);
+    border-radius: 50%;
+    background: rgba(255,215,0,0.4);
+    border: 3px solid #FFD700;
+    font-size: clamp(1.4rem,5vw,2rem);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 15;
+    transition: transform 0.1s;
+    backdrop-filter: blur(4px);
+  }
+  #jumpBtn:active { transform: translateX(50%) scale(0.9); }
+
+  /* Feedback toast */
+  #feedbackToast {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.3rem, 5vw, 2rem);
+    padding: 16px 32px;
+    border-radius: 20px;
+    z-index: 50;
+    transition: transform 0.2s, opacity 0.3s;
+    pointer-events: none;
+    text-align: center;
+  }
+  #feedbackToast.show { transform: translate(-50%, -50%) scale(1); }
+  #feedbackToast.hide { opacity: 0; }
+
+  /* Progress dots */
+  #progressDots {
+    position: absolute;
+    top: 48px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 5px; z-index: 20;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    border: 1.5px solid rgba(255,255,255,0.6);
+    transition: background 0.3s;
+  }
+  .dot.done { background: #FFD700; }
+  .dot.wrong-dot { background: #ff6b6b; }
+  .dot.current { background: white; }
+
+  /* ===== REPORT SCREEN ===== */
+  #reportScreen {
+    background: linear-gradient(160deg, #1a1a6e 0%, #16213e 60%, #0f3460 100%);
+    color: white;
+    overflow-y: auto;
+    padding: 20px;
+    gap: 12px;
+  }
+  #reportScreen h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    color: #FFD700;
+    text-align: center;
+  }
+  .grade-circle {
+    width: clamp(90px, 25vw, 130px);
+    height: clamp(90px, 25vw, 130px);
+    border-radius: 50%;
+    border: 5px solid #FFD700;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-family: 'Fredoka One', cursive;
+    background: rgba(255,215,0,0.1);
+    margin: 0 auto;
+  }
+  .grade-circle .score-num { font-size: clamp(2rem, 8vw, 3.5rem); color: #FFD700; line-height: 1; }
+  .grade-circle .score-denom { font-size: 0.9rem; color: #aad4ff; }
+  .results-table { width: 100%; max-width: 420px; border-collapse: collapse; font-size: clamp(0.75rem, 2.2vw, 0.9rem); }
+  .results-table th { background: rgba(255,215,0,0.2); color: #FFD700; padding: 7px 10px; text-align: left; }
+  .results-table td { padding: 6px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .results-table tr:nth-child(even) td { background: rgba(255,255,255,0.04); }
+  .result-icon { font-size: 1.1em; }
+
+  /* ===== LEADERBOARD SCREEN ===== */
+  #leaderboardScreen {
+    background: linear-gradient(160deg, #1a1a6e 0%, #16213e 60%, #0f3460 100%);
+    color: white;
+    padding: 20px;
+    gap: 14px;
+    overflow-y: auto;
+  }
+  #leaderboardScreen h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.4rem, 5vw, 2.2rem);
+    color: #FFD700;
+    text-align: center;
+  }
+  .lb-entry {
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.07); border-radius: 14px;
+    padding: 10px 16px; width: 100%; max-width: 420px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .lb-rank { font-family: 'Fredoka One', cursive; font-size: 1.5rem; width: 32px; text-align: center; }
+  .lb-name { flex: 1; font-weight: 700; }
+  .lb-score { font-family: 'Fredoka One', cursive; color: #FFD700; font-size: 1.1rem; }
+  .lb-time { font-size: 0.8rem; color: #aad4ff; }
+  .lb-date { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+  .medal-1 { color: #FFD700; }
+  .medal-2 { color: #C0C0C0; }
+  .medal-3 { color: #CD7F32; }
+
+  /* Stars animation */
+  @keyframes starPop {
+    0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+    60% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .star-anim { animation: starPop 0.5s ease forwards; }
+
+  /* Particle burst */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFly 0.8s ease-out forwards;
+    z-index: 60;
+  }
+  @keyframes particleFly {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+  }
+
+  /* Responsive tweaks */
+  @media (max-width: 400px) {
+    .ans-box { min-width: 72px; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== START SCREEN ==================== -->
+<div id="startScreen" class="screen">
+  <div class="start-emoji">🌍</div>
+  <h1>🌟 Awesome Experiences</h1>
+  <div class="subtitle">Vocabulary Game · By Teacher Lizbeth</div>
+
+  <div class="name-input-wrap">
+    <label for="playerNameInput">✏️ Enter your name:</label>
+    <input id="playerNameInput" type="text" placeholder="Your name here..." maxlength="20" autocomplete="off">
+    <label style="margin-top:6px;">👥 Your group:</label>
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <button id="grpA" class="btn btn-blue" style="padding:10px 32px; font-size:1.1rem;" onclick="selectGroup('A')">Group A</button>
+      <button id="grpB" class="btn btn-blue" style="padding:10px 32px; font-size:1.1rem;" onclick="selectGroup('B')">Group B</button>
+    </div>
+  </div>
+
+  <div class="rules-box">
+    <strong>🎮 How to Play:</strong><br>
+    • Read the Spanish word at the bottom<br>
+    • Jump &amp; catch the correct English answer!<br>
+    • <strong>← →</strong> Arrow keys or on-screen buttons to move<br>
+    • <strong>Space / ↑</strong> or <strong>🚀 Jump</strong> button to jump<br>
+    • 17 questions · Score out of 17
+  </div>
+
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+    <button class="btn btn-gold" onclick="startGame()">🚀 Play!</button>
+    <button class="btn btn-blue" onclick="showLeaderboard()">🏆 Leaderboard</button>
+  </div>
+</div>
+
+<!-- ==================== GAME AREA ==================== -->
+<div id="gameArea" class="hidden">
+  <!-- Big floating word in sky -->
+  <div id="skyWord"></div>
+  <!-- Birds layer -->
+  <div id="birdsLayer"></div>
+  <!-- HUD -->
+  <div id="hud">
+    <div class="hud-chip">❤️ <span id="livesDisplay">3</span></div>
+    <div class="hud-chip" id="timerDisplay">⏱ 0s</div>
+    <div class="hud-chip">✅ <span id="scoreDisplay">0</span>/17</div>
+  </div>
+
+  <!-- Progress dots -->
+  <div id="progressDots"></div>
+
+  <!-- Ground bar -->
+  <div id="groundBar">
+    <div id="promptLabel">¿Cómo se dice en inglés?</div>
+    <div id="promptWord">–</div>
+  </div>
+
+  <!-- Player -->
+  <div id="player">😄</div>
+
+  <!-- Touch Controls -->
+  <div id="touchControls">
+    <div class="touch-btn" id="leftBtn">⬅️</div>
+    <div style="flex:1"></div>
+    <div class="touch-btn" id="rightBtn">➡️</div>
+  </div>
+  <div id="jumpBtn">🚀</div>
+
+  <!-- Feedback toast -->
+  <div id="feedbackToast"></div>
+</div>
+
+<!-- ==================== REPORT SCREEN ==================== -->
+<div id="reportScreen" class="screen hidden">
+  <h2>📋 Report Card</h2>
+  <div class="grade-circle">
+    <div class="score-num" id="finalScore">0</div>
+    <div class="score-denom">/17</div>
+  </div>
+  <!-- Name & group right under the grade — big and impossible to miss -->
+  <div id="reportName" style="
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(1.4rem,5vw,2.2rem);
+    color:white;
+    text-align:center;
+    background:rgba(255,255,255,0.12);
+    border:3px solid #FFD700;
+    border-radius:16px;
+    padding:10px 28px;
+    margin:6px 0 2px;
+  "></div>
+  <div id="reportGroup" style="
+    font-family:'Fredoka One',cursive;
+    font-size:clamp(1rem,3.5vw,1.4rem);
+    color:#FFD700;
+    text-align:center;
+    margin-bottom:4px;
+  "></div>
+  <div id="gradeEmoji" style="font-size:2.5rem; text-align:center;"></div>
+  <div id="gradeLabel" style="font-family:'Fredoka One',cursive; font-size:1.2rem; color:#FFD700; text-align:center;"></div>
+  <div id="timeTaken" style="color:#aad4ff; font-size:0.9rem; text-align:center;"></div>
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:16px;">
+    <button class="btn btn-gold" onclick="startGame()">🔄 Play Again</button>
+    <button class="btn btn-blue" onclick="showLeaderboard()">🏆 Leaderboard</button>
+    <button class="btn btn-green" onclick="goHome()">🏠 Home</button>
+  </div>
+</div>
+
+<!-- ==================== LEADERBOARD SCREEN ==================== -->
+<div id="leaderboardScreen" class="screen hidden">
+  <h2>🏆 Leaderboard</h2>
+  <div id="lbStatus" style="color:#aad4ff; font-size:0.85rem; text-align:center;">Loading...</div>
+  <div id="lbList" style="display:flex; flex-direction:column; gap:8px; align-items:center; width:100%; max-width:440px;"></div>
+  <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:12px;">
+    <button class="btn btn-gold" onclick="startGame()">🚀 Play!</button>
+    <button class="btn btn-green" onclick="goHome()">🏠 Home</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+//  VOCABULARY DATA
+// =====================================================
+const ALL_VOCAB = [
+  { es: "Explorar una selva tropical", en: "Explore a rainforest",       emoji: "🌿" },
+  { es: "Sostener una serpiente",      en: "Hold a snake",               emoji: "🐍" },
+  { es: "Dormir en el desierto",       en: "Sleep in the desert",        emoji: "🏜️" },
+  { es: "Ir en safari",                en: "Go on a safari",             emoji: "🦁" },
+  { es: "Escalar un volcán",           en: "Climb a volcano",            emoji: "🌋" },
+  { es: "Montar un camello",           en: "Ride a camel",               emoji: "🐪" },
+  { es: "Ver las pirámides",           en: "See the pyramids",           emoji: "🔺" },
+  { es: "Conocer a una persona famosa",en: "Meet a famous person",       emoji: "🌟" },
+  { es: "Volar en globo aerostático",  en: "Fly in a hot air balloon",   emoji: "🎈" },
+  { es: "Águilas",                     en: "Eagles",                     emoji: "🦅" },
+  { es: "Alces",                       en: "Moose",                      emoji: "🫎" },
+  { es: "Jaguares",                    en: "Jaguars",                    emoji: "🐆" },
+  { es: "Perezosos",                   en: "Sloths",                     emoji: "🦥" },
+  { es: "Avestruces",                  en: "Ostriches",                  emoji: "🦤" },
+  { es: "Osos polares",                en: "Polar bears",                emoji: "🐻‍❄️" },
+  { es: "Leopardos de las nieves",     en: "Snow leopards",              emoji: "🐾" },
+  { es: "Canguros",                    en: "Kangaroos",                  emoji: "🦘" },
+];
+
+// =====================================================
+//  FIREBASE CONFIG
+// =====================================================
+const FB_URL = "https://unit56vocab2-default-rtdb.firebaseio.com";
+
+async function fbGet(path) {
+  try {
+    const r = await fetch(`${FB_URL}/${path}.json`);
+    return await r.json();
+  } catch(e) { return null; }
+}
+async function fbPost(path, data) {
+  try {
+    const r = await fetch(`${FB_URL}/${path}.json`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+// =====================================================
+//  GAME STATE
+// =====================================================
+let gameVocab = [];        // 10 shuffled questions
+let currentIdx = 0;
+let playerScore = 0;
+let playerAnswers = [];
+let gameStartTime = 0;
+let gameTimerInterval = null;
+let playerName = "Student";
+let playerGroup = "A";
+
+// Group selector
+function selectGroup(g) {
+  playerGroup = g;
+  document.getElementById('grpA').style.background = g === 'A'
+    ? 'linear-gradient(135deg,#FFD700,#ff9900)' : '';
+  document.getElementById('grpA').style.color = g === 'A' ? '#1a1a2e' : '';
+  document.getElementById('grpB').style.background = g === 'B'
+    ? 'linear-gradient(135deg,#FFD700,#ff9900)' : '';
+  document.getElementById('grpB').style.color = g === 'B' ? '#1a1a2e' : '';
+}
+
+// Physics
+let playerX = 0, playerY = 0;
+let velX = 0, velY = 0;
+let isOnGround = true;
+const GRAVITY = 0.52;
+const JUMP_FORCE = -15;
+const MOVE_SPEED = 5;
+const GROUND_Y_OFFSET = 0.14; // 14% from bottom = groundBar height
+
+// Clouds, boxes & birds
+let clouds = [];
+let boxes = [];
+let birds = [];
+let animFrame = null;
+let boxSpawnTimer = 0;
+let questionActive = false;
+let currentAnswers = [];
+let correctAnswer = "";
+
+// Keys
+const keys = { left: false, right: false, up: false };
+let jumpCooldown = false;
+
+// Canvas dims
+let W = 0, H = 0;
+let groundY = 0;
+
+// =====================================================
+//  UTILS
+// =====================================================
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getWrongAnswers(correctIdx, count) {
+  const pool = ALL_VOCAB.filter((_, i) => i !== correctIdx);
+  return shuffle(pool).slice(0, count);
+}
+
+function formatTime(ms) {
+  const s = Math.floor(ms / 1000);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  if (m > 0) return `${m}m ${sec}s`;
+  return `${s}s`;
+}
+
+// =====================================================
+//  SCREENS
+// =====================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
+}
+
+function goHome() {
+  showScreen('startScreen');
+  stopGame();
+}
+
+// =====================================================
+//  START GAME
+// =====================================================
+function startGame() {
+  playerName = document.getElementById('playerNameInput')?.value?.trim() || "Student";
+  if (!playerName) playerName = "Student";
+  // group stays whatever was last selected (default A)
+
+  // Use all 20 words, each appearing exactly once as the correct answer
+  gameVocab = shuffle(ALL_VOCAB);
+  currentIdx = 0;
+  playerScore = 0;
+  playerAnswers = [];
+
+  showScreen(null); // hide all screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById('gameArea').classList.remove('hidden');
+
+  initGameArea();
+  gameStartTime = Date.now();
+  startTimer();
+  setupQuestion();
+}
+
+function stopGame() {
+  cancelAnimationFrame(animFrame);
+  clearInterval(gameTimerInterval);
+  document.getElementById('gameArea').classList.add('hidden');
+}
+
+// =====================================================
+//  TIMER
+// =====================================================
+function startTimer() {
+  clearInterval(gameTimerInterval);
+  gameTimerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+    document.getElementById('timerDisplay').textContent = `⏱ ${elapsed}s`;
+  }, 500);
+}
+
+// =====================================================
+//  INIT GAME AREA
+// =====================================================
+function initGameArea() {
+  const ga = document.getElementById('gameArea');
+  W = ga.clientWidth || window.innerWidth;
+  H = ga.clientHeight || window.innerHeight;
+  groundY = H * (1 - GROUND_Y_OFFSET) - 50; // player feet target
+
+  // Remove old clouds/boxes/birds
+  document.querySelectorAll('.cloud, .ans-box, .particle, .bird').forEach(e => e.remove());
+  clouds = []; boxes = []; birds = [];
+
+  // Spawn clouds
+  for (let i = 0; i < 5; i++) spawnCloud(true);
+
+  // Spawn birds
+  for (let i = 0; i < 6; i++) spawnBird(true);
+
+  // Clear sky word
+  document.getElementById('skyWord').textContent = '';
+
+  // Player init
+  playerX = W * 0.15;
+  playerY = groundY;
+  velX = 0; velY = 0;
+  isOnGround = true;
+  updatePlayerDOM();
+
+  // Progress dots
+  buildProgressDots();
+
+  // Controls
+  bindControls();
+
+  // Start loop
+  cancelAnimationFrame(animFrame);
+  loop();
+}
+
+// =====================================================
+//  CLOUDS
+// =====================================================
+function spawnCloud(initial = false) {
+  const el = document.createElement('div');
+  el.className = 'cloud';
+  const w = 80 + Math.random() * 120;
+  const h = 28 + Math.random() * 24;
+  el.style.width = w + 'px';
+  el.style.height = h + 'px';
+  const y = H * 0.04 + Math.random() * H * 0.35;
+  const x = initial ? Math.random() * W : W + w + 10;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  const speed = 0.4 + Math.random() * 0.5;
+  document.getElementById('gameArea').appendChild(el);
+  clouds.push({ el, x, y, w, speed });
+}
+
+function updateClouds() {
+  for (let i = clouds.length - 1; i >= 0; i--) {
+    const c = clouds[i];
+    c.x -= c.speed;
+    c.el.style.left = c.x + 'px';
+    if (c.x < -(c.w + 20)) {
+      c.el.remove();
+      clouds.splice(i, 1);
+      spawnCloud(false);
+    }
+  }
+}
+
+// =====================================================
+//  BIRDS
+// =====================================================
+const BIRD_EMOJIS = ['🐦','🐦','🐦','🦅','🦜'];
+function spawnBird(initial = false) {
+  const el = document.createElement('div');
+  el.className = 'bird';
+  const birdEmoji = BIRD_EMOJIS[Math.floor(Math.random() * BIRD_EMOJIS.length)];
+  el.textContent = birdEmoji;
+  const y = H * (0.05 + Math.random() * 0.38);
+  const x = initial ? Math.random() * W : W + 30;
+  el.style.left = x + 'px';
+  el.style.top = y + 'px';
+  const speed = 1.8 + Math.random() * 2.2;
+  // Subtle vertical bobbing via CSS animation offset
+  el.style.animationDelay = (Math.random() * 0.4) + 's';
+  document.getElementById('birdsLayer').appendChild(el);
+  birds.push({ el, x, y, speed });
+}
+
+function updateBirds() {
+  for (let i = birds.length - 1; i >= 0; i--) {
+    const b = birds[i];
+    b.x -= b.speed;
+    // gentle sine bob
+    b.y += Math.sin(Date.now() * 0.002 + i) * 0.4;
+    b.el.style.left = b.x + 'px';
+    b.el.style.top  = b.y + 'px';
+    if (b.x < -40) {
+      b.el.remove();
+      birds.splice(i, 1);
+      spawnBird(false);
+    }
+  }
+}
+
+// =====================================================
+//  QUESTION SETUP
+// =====================================================
+function setupQuestion() {
+  if (currentIdx >= gameVocab.length) { endGame(); return; }
+
+  questionActive = true;
+  const q = gameVocab[currentIdx];
+  correctAnswer = q.en;
+
+  // Update ground prompt AND big sky word
+  document.getElementById('promptWord').textContent = `${q.emoji} ${q.es}`;
+  document.getElementById('skyWord').textContent = `${q.emoji} ${q.es}`;
+
+  // Build answers: correct placed randomly at position 1, 2 or 3 (never first — must read wrong ones first)
+  const wrongs = getWrongAnswers(ALL_VOCAB.indexOf(ALL_VOCAB.find(v=>v.en===q.en)), 3);
+  const wrongOptions = shuffle(wrongs).map(w => ({ text: w.en, emoji: w.emoji, isCorrect: false }));
+  const correctPos = 1 + Math.floor(Math.random() * 3); // random slot: 1, 2 or 3 (0-indexed, never 0)
+  wrongOptions.splice(correctPos, 0, { text: q.en, emoji: q.emoji, isCorrect: true });
+  currentAnswers = wrongOptions;
+
+  // Remove old boxes
+  boxes.forEach(b => b.el.remove());
+  boxes = [];
+
+  currentAnswers.forEach((ans, i) => {
+    const el = document.createElement('div');
+    el.className = 'ans-box';
+    el.innerHTML = `<span class="emoji-hint">${ans.emoji}</span>${ans.text}`;
+    const y = groundY - 160;
+    const x = W + i * (W * 0.85) + 60;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.getElementById('gameArea').appendChild(el);
+    // 4 speed tiers — Q1-5 slow, Q6-10 medium, Q11-14 fast, Q15-17 super fast
+    let baseSpeed;
+    if (currentIdx < 5)       baseSpeed = 4 + (currentIdx * 0.3);       // 4.0 → 5.2  SLOW
+    else if (currentIdx < 10) baseSpeed = 8 + ((currentIdx-5) * 0.4);   // 8.0 → 9.6  MEDIUM
+    else if (currentIdx < 14) baseSpeed = 13 + ((currentIdx-10) * 0.6); // 13 → 15.4  FAST
+    else                      baseSpeed = 16 + ((currentIdx-14) * 0.5); // 16 → 17    SUPER FAST 🔥
+    boxes.push({ el, x, y, w: 0, h: 0, isCorrect: ans.isCorrect, text: ans.text, collected: false, speed: baseSpeed });
+  });
+
+  updateProgress();
+  updateScore();
+}
+
+// =====================================================
+//  MAIN LOOP
+// =====================================================
+function loop() {
+  updatePhysics();
+  updateClouds();
+  updateBirds();
+  updateBoxes();
+  checkCollisions();
+  animFrame = requestAnimationFrame(loop);
+}
+
+function updatePhysics() {
+  // Horizontal
+  if (keys.left)  { velX = -MOVE_SPEED; }
+  else if (keys.right) { velX = MOVE_SPEED; }
+  else { velX *= 0.7; }
+
+  // Gravity
+  if (!isOnGround) {
+    velY += GRAVITY;
+  }
+
+  playerX += velX;
+  playerY += velY;
+
+  // Ground collision
+  if (playerY >= groundY) {
+    playerY = groundY;
+    velY = 0;
+    isOnGround = true;
+    jumpCooldown = false;
+  }
+
+  // Wall clamp
+  const pW = 40;
+  if (playerX < 0) { playerX = 0; velX = 0; }
+  if (playerX > W - pW) { playerX = W - pW; velX = 0; }
+
+  updatePlayerDOM();
+}
+
+function jump() {
+  if (isOnGround && !jumpCooldown) {
+    velY = JUMP_FORCE;
+    isOnGround = false;
+    jumpCooldown = true;
+    // Flip emoji while jumping
+    const pl = document.getElementById('player');
+    pl.style.transform = 'scaleY(0.9)';
+    setTimeout(() => pl.style.transform = '', 200);
+  }
+}
+
+function updatePlayerDOM() {
+  const pl = document.getElementById('player');
+  pl.style.left = playerX + 'px';
+  pl.style.top = playerY + 'px';
+  // Walking animation
+  if (Math.abs(velX) > 1) {
+    pl.style.transform = velX > 0 ? 'scaleX(1)' : 'scaleX(-1)';
+  }
+}
+
+// =====================================================
+//  BOXES
+// =====================================================
+function updateBoxes() {
+  for (let i = boxes.length - 1; i >= 0; i--) {
+    const b = boxes[i];
+    if (b.collected) continue;
+    b.x -= b.speed;
+    b.el.style.left = b.x + 'px';
+    // Measure box dims once
+    if (!b.w) {
+      const rect = b.el.getBoundingClientRect();
+      b.w = rect.width;
+      b.h = rect.height;
+    }
+    // Loop back: find the rightmost box and place this one a full screen behind it
+    if (b.x < -(b.w + 20)) {
+      let maxX = W;
+      for (const other of boxes) {
+        if (other !== b && !other.collected && other.x > maxX) maxX = other.x;
+      }
+      b.x = maxX + W * 0.85;
+      b.el.style.left = b.x + 'px';
+    }
+  }
+}
+
+// =====================================================
+//  COLLISION
+// =====================================================
+function checkCollisions() {
+  if (!questionActive) return;
+
+  // Measure the actual rendered player size each frame
+  const pl = document.getElementById('player');
+  const plRect = pl.getBoundingClientRect();
+
+  // Shrink hitbox to ~50% of visual size so it only triggers on real contact
+  const shrinkX = plRect.width  * 0.25;
+  const shrinkY = plRect.height * 0.25;
+  const hitbox = {
+    x: plRect.left   + shrinkX,
+    y: plRect.top    + shrinkY,
+    x2: plRect.right  - shrinkX,
+    y2: plRect.bottom - shrinkY
+  };
+
+  for (const b of boxes) {
+    if (b.collected) continue;
+    if (!b.w) continue;
+
+    const bRect = b.el.getBoundingClientRect();
+
+    // AABB using real screen coordinates
+    if (
+      hitbox.x  < bRect.right  &&
+      hitbox.x2 > bRect.left   &&
+      hitbox.y  < bRect.bottom &&
+      hitbox.y2 > bRect.top
+    ) {
+      handleBoxHit(b);
+      break;
+    }
+  }
+}
+
+function handleBoxHit(b) {
+  if (!questionActive) return;
+  b.collected = true;
+  questionActive = false;
+
+  const q = gameVocab[currentIdx];
+
+  if (b.isCorrect) {
+    b.el.classList.add('correct');
+    playerScore++;
+    playerAnswers.push({ es: q.es, en: q.en, given: b.text, correct: true });
+    showFeedback('✅ Correct!', '#a8f0a8');
+    burstParticles(playerX + 20, playerY, '#FFD700');
+    document.getElementById('player').textContent = '😄';
+  } else {
+    b.el.classList.add('wrong');
+    playerAnswers.push({ es: q.es, en: q.en, given: b.text, correct: false });
+    showFeedback(`❌ It was:\n"${q.en}"`, '#ffa8a8');
+    document.getElementById('player').textContent = '😟';
+  }
+
+  updateScore();
+  updateDot(currentIdx, b.isCorrect);
+  currentIdx++;
+
+  setTimeout(() => {
+    hideFeedback();
+    document.getElementById('player').textContent = '😄';
+    // Remove ALL boxes (they are per-question, including looping ones)
+    boxes.forEach(bx => bx.el.remove());
+    boxes = [];
+    if (currentIdx < gameVocab.length) {
+      setupQuestion();
+    } else {
+      questionActive = false;
+      endGame();
+    }
+  }, 1400);
+}
+
+// =====================================================
+//  FEEDBACK
+// =====================================================
+function showFeedback(msg, color) {
+  const ft = document.getElementById('feedbackToast');
+  ft.textContent = msg;
+  ft.style.background = color === '#a8f0a8'
+    ? 'rgba(0,100,0,0.85)' : 'rgba(120,0,0,0.85)';
+  ft.classList.remove('hide');
+  ft.classList.add('show');
+}
+function hideFeedback() {
+  const ft = document.getElementById('feedbackToast');
+  ft.classList.add('hide');
+  setTimeout(() => { ft.classList.remove('show', 'hide'); }, 300);
+}
+
+// =====================================================
+//  PARTICLES
+// =====================================================
+function burstParticles(x, y, color) {
+  const ga = document.getElementById('gameArea');
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI * 2 * i) / 14;
+    const dist = 60 + Math.random() * 60;
+    p.style.cssText = `
+      left:${x}px; top:${y}px;
+      width:${6+Math.random()*6}px; height:${6+Math.random()*6}px;
+      background:${['#FFD700','#ff9900','#ff6b6b','#66ff66','#4fc3f7'][Math.floor(Math.random()*5)]};
+      --dx:${Math.cos(angle)*dist}px; --dy:${Math.sin(angle)*dist}px;
+    `;
+    ga.appendChild(p);
+    setTimeout(() => p.remove(), 900);
+  }
+}
+
+// =====================================================
+//  PROGRESS DOTS
+// =====================================================
+function buildProgressDots() {
+  const pd = document.getElementById('progressDots');
+  pd.innerHTML = '';
+  for (let i = 0; i < 17; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' current' : '');
+    d.id = `dot_${i}`;
+    pd.appendChild(d);
+  }
+}
+function updateProgress() {
+  for (let i = 0; i < 17; i++) {
+    const d = document.getElementById(`dot_${i}`);
+    if (!d) continue;
+    d.className = 'dot';
+    if (i < currentIdx) {
+      if (playerAnswers[i]?.correct) d.classList.add('done');
+      else d.classList.add('wrong-dot');
+    } else if (i === currentIdx) {
+      d.classList.add('current');
+    }
+  }
+}
+function updateDot(idx, correct) {
+  const d = document.getElementById(`dot_${idx}`);
+  if (!d) return;
+  d.className = 'dot ' + (correct ? 'done' : 'wrong-dot');
+}
+
+// =====================================================
+//  SCORE HUD
+// =====================================================
+function updateScore() {
+  document.getElementById('scoreDisplay').textContent = playerScore;
+  document.getElementById('livesDisplay').textContent = '❤️'.repeat(Math.max(0, 3 - playerAnswers.filter(a=>!a.correct).length));
+}
+
+// =====================================================
+//  CONTROLS
+// =====================================================
+function bindControls() {
+  // Remove previous listeners to avoid duplication
+  document.onkeydown = (e) => {
+    if (['ArrowLeft','a','A'].includes(e.key)) { keys.left = true; e.preventDefault(); }
+    if (['ArrowRight','d','D'].includes(e.key)) { keys.right = true; e.preventDefault(); }
+    if (['ArrowUp','w','W',' '].includes(e.key)) { jump(); e.preventDefault(); }
+  };
+  document.onkeyup = (e) => {
+    if (['ArrowLeft','a','A'].includes(e.key)) keys.left = false;
+    if (['ArrowRight','d','D'].includes(e.key)) keys.right = false;
+  };
+
+  // Touch
+  const leftBtn  = document.getElementById('leftBtn');
+  const rightBtn = document.getElementById('rightBtn');
+  const jumpBtn  = document.getElementById('jumpBtn');
+
+  function addHold(btn, keyName) {
+    btn.addEventListener('touchstart', (e) => { keys[keyName] = true; e.preventDefault(); }, {passive:false});
+    btn.addEventListener('touchend',   (e) => { keys[keyName] = false; e.preventDefault(); }, {passive:false});
+    btn.addEventListener('mousedown',  () => keys[keyName] = true);
+    btn.addEventListener('mouseup',    () => keys[keyName] = false);
+  }
+  addHold(leftBtn, 'left');
+  addHold(rightBtn, 'right');
+
+  jumpBtn.addEventListener('touchstart', (e) => { jump(); e.preventDefault(); }, {passive:false});
+  jumpBtn.addEventListener('mousedown', () => jump());
+}
+
+// =====================================================
+//  END GAME
+// =====================================================
+async function endGame() {
+  clearInterval(gameTimerInterval);
+  cancelAnimationFrame(animFrame);
+  document.getElementById('gameArea').classList.add('hidden');
+
+  const elapsed = Date.now() - gameStartTime;
+
+  // Submit to Firebase
+  await submitScore(playerName, playerScore, elapsed);
+
+  showReport(elapsed);
+}
+
+async function submitScore(name, score, timeMs) {
+  const entry = {
+    name: name || "Student",
+    group: playerGroup,
+    score: score,
+    timeMs: timeMs,
+    timestamp: new Date().toISOString()
+  };
+  try {
+    await fbPost('leaderboard', entry);
+  } catch(e) { /* silent fail */ }
+}
+
+// =====================================================
+//  REPORT SCREEN
+// =====================================================
+function showReport(elapsed) {
+  showScreen('reportScreen');
+
+  document.getElementById('reportName').textContent = `🎓 ${playerName}`;
+  document.getElementById('reportGroup').textContent = `👥 Group ${playerGroup}`;
+  document.getElementById('finalScore').textContent = playerScore;
+  document.getElementById('timeTaken').textContent = `⏱ Completed in ${formatTime(elapsed)}`;
+
+  // Grade label
+  const grades = [
+    { min:17, emoji:'🌟🌟🌟', label:'PERFECT! Outstanding!' },
+    { min:15, emoji:'🌟🌟',   label:'Excellent! Amazing job!' },
+    { min:12, emoji:'⭐⭐',   label:'Great work! Keep it up!' },
+    { min:8,  emoji:'⭐',     label:'Good effort! Practice more!' },
+    { min:0,  emoji:'💪',     label:'Keep practicing! You can do it!' },
+  ];
+  const g = grades.find(x => playerScore >= x.min);
+  document.getElementById('gradeEmoji').textContent = g.emoji;
+  document.getElementById('gradeLabel').textContent = g.label;
+
+  // Results table
+  const tbody = document.getElementById('resultsBody');
+  tbody.innerHTML = '';
+  playerAnswers.forEach((a, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${a.es}</td>
+      <td>${a.en}</td>
+      <td style="color:${a.correct?'#6dbf5e':'#ff6b6b'}">${a.given}</td>
+      <td class="result-icon">${a.correct ? '✅' : '❌'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// =====================================================
+//  LEADERBOARD
+// =====================================================
+async function showLeaderboard() {
+  showScreen('leaderboardScreen');
+  document.getElementById('lbStatus').textContent = '⏳ Loading...';
+  document.getElementById('lbList').innerHTML = '';
+
+  try {
+    const data = await fbGet('leaderboard');
+    if (!data) { document.getElementById('lbStatus').textContent = '⚠️ No scores yet. Be the first!'; return; }
+
+    // Convert object to array
+    const entries = Object.values(data);
+
+    // Sort: highest score first, then lowest time
+    entries.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return (a.timeMs || 99999999) - (b.timeMs || 99999999);
+    });
+
+    const top = entries.slice(0, 10);
+    document.getElementById('lbStatus').textContent = `🏆 Top ${top.length} Players`;
+
+    const medals = ['🥇','🥈','🥉'];
+    const medalClass = ['medal-1','medal-2','medal-3'];
+
+    top.forEach((e, i) => {
+      const div = document.createElement('div');
+      div.className = 'lb-entry';
+      const medal = i < 3 ? `<span class="${medalClass[i]}">${medals[i]}</span>` : `<span style="color:#aaa">#${i+1}</span>`;
+      const dateStr = e.timestamp ? new Date(e.timestamp).toLocaleDateString() : '';
+      div.innerHTML = `
+        <div class="lb-rank">${medal}</div>
+        <div>
+          <div class="lb-name">${escapeHtml(e.name || 'Student')} <span style="color:#FFD700;font-size:0.85em;">Gr.${escapeHtml(e.group||'?')}</span></div>
+          <div class="lb-date">${dateStr}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="lb-score">${e.score}/17</div>
+          <div class="lb-time">⏱ ${e.timeMs ? formatTime(e.timeMs) : '—'}</div>
+        </div>
+      `;
+      document.getElementById('lbList').appendChild(div);
+    });
+
+  } catch(err) {
+    document.getElementById('lbStatus').textContent = '⚠️ Could not load leaderboard.';
+  }
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// =====================================================
+//  RESIZE
+// =====================================================
+window.addEventListener('resize', () => {
+  if (!document.getElementById('gameArea').classList.contains('hidden')) {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    groundY = H * (1 - GROUND_Y_OFFSET) - 50;
+  }
+});
+
+// Prevent default scroll on arrow keys
+window.addEventListener('keydown', e => {
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// Default group A selected on load
+selectGroup('A');
+</script>
+</body>
+</html>
